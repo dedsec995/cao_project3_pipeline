@@ -46,6 +46,7 @@ typedef struct Stages
 	bool forwarding; // IS data been forwarded
 	int halt_triggered; // ???
 	int unfreeze;
+	int branch_taken; // Is the branch Taken at Fetch
 
 } Stages;
 

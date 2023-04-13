@@ -283,11 +283,11 @@ void simulate(CPU* cpu){
         freed_registers(cpu,REG_COUNT);
         print_btb(cpu);
         print_pt(cpu);
-        // print_display(cpu);
+        print_display(cpu);
         cpu->clock++;
         cpu->fetch_latch.has_inst = 1;
         printf("%d",cpu->fetch_latch.has_inst);
-        if(cpu->clock > 100000){
+        if(cpu->clock > 10000){
             return;
         }
         // if(strcmp(options,"pipeline") == 0){
@@ -334,7 +334,10 @@ int writeback_unit(CPU* cpu){
             // printf("Unblocking: %s\n", cpu->writeback_latch.rg1);
             return(0);
         }
-        cpu->regs[atoi(cpu->writeback_latch.rg1+1)].value = cpu->writeback_latch.buffer;
+        if(strcmp(cpu->writeback_latch.opcode,"bez") == 0 || strcmp(cpu->writeback_latch.opcode,"bgez") == 0 || strcmp(cpu->writeback_latch.opcode,"blez") == 0 | strcmp(cpu->writeback_latch.opcode,"bgtz") == 0 || strcmp(cpu->writeback_latch.opcode,"bltz") == 0){}
+        else{
+            cpu->regs[atoi(cpu->writeback_latch.rg1+1)].value = cpu->writeback_latch.buffer;
+        }
         if (cpu->regs[atoi(cpu->writeback_latch.rg1+1)].is_writing == 1 && cpu->register_read_latch.halt_triggered == 1){
             if(strcmp(cpu->writeback_latch.rg1,cpu->register_read_latch.or1) == 0 || strcmp(cpu->writeback_latch.rg1,cpu->register_read_latch.or2) == 0){
                 cpu->writeback_latch.halt_triggered = 0;
@@ -488,123 +491,282 @@ void branch_unit(CPU* cpu){
                 // printf("Blocking : %s\n",cpu->branch_latch.rg1);
             }
         }
+        strcpy(cpu->br_reg,cpu->branch_latch.rg1);
+        cpu->br_val = cpu->branch_latch.buffer;
         if(strcmp(cpu->branch_latch.opcode,"bez") == 0){
             if(cpu->regs[atoi(cpu->branch_latch.rg1+1)].value == 0){
-                cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
-                cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
-                cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
-                cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
-                cpu->fetch_latch.has_inst = 0;
-                cpu->decode_latch.has_inst = 0;
-                cpu->analysis_latch.has_inst = 0;
-                cpu->register_read_latch.has_inst = 0;
-                cpu->adder_latch.has_inst = 0;
-                cpu->multiplier_latch.has_inst = 0;
-                cpu->divider_latch.has_inst = 0;
-                cpu->memory1_latch = cpu->branch_latch;
-                cpu->branch_latch.has_inst = 0;
-                return;
+                if(cpu->branch_latch.branch_taken == 1){
+                    printf("Branch Already Taken");
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
+                    }
+                }
+                else{
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
+                    }
+                    cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
+                    cpu->fetch_latch.has_inst = 0;
+                    cpu->decode_latch.has_inst = 0;
+                    cpu->analysis_latch.has_inst = 0;
+                    cpu->register_read_latch.has_inst = 0;
+                    cpu->adder_latch.has_inst = 0;
+                    cpu->multiplier_latch.has_inst = 0;
+                    cpu->divider_latch.has_inst = 0;
+                    cpu->memory1_latch = cpu->branch_latch;
+                    cpu->branch_latch.has_inst = 0;
+                    return;
+                }
             }
             else{
-                cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
-                printf("bez branch not taken");
+                if(cpu->branch_latch.branch_taken == 1){
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
+                    }
+                    cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
+                    cpu->fetch_latch.has_inst = 0;
+                    cpu->decode_latch.has_inst = 0;
+                    cpu->analysis_latch.has_inst = 0;
+                    cpu->register_read_latch.has_inst = 0;
+                    cpu->adder_latch.has_inst = 0;
+                    cpu->multiplier_latch.has_inst = 0;
+                    cpu->divider_latch.has_inst = 0;
+                    cpu->memory1_latch = cpu->branch_latch;
+                    cpu->branch_latch.has_inst = 0;
+                    printf("bez not taken but should be Taken");
+                    return;
+                }
+                else{
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
+                    }
+                    printf("bez branch not taken");
+                }
             }
         }
         else if(strcmp(cpu->branch_latch.opcode,"bgez") == 0){
             if(cpu->regs[atoi(cpu->branch_latch.rg1+1)].value >= 0){
-                cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 0;
-                cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
-                cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
-                cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
-                cpu->fetch_latch.has_inst = 0;
-                cpu->decode_latch.has_inst = 0;
-                cpu->analysis_latch.has_inst = 0;
-                cpu->register_read_latch.has_inst = 0;
-                cpu->adder_latch.has_inst = 0;
-                cpu->multiplier_latch.has_inst = 0;
-                cpu->divider_latch.has_inst = 0;
-                cpu->memory1_latch = cpu->branch_latch;
-                cpu->branch_latch.has_inst = 0;
-                return;
+                if(cpu->branch_latch.branch_taken == 1){
+                    printf("Branch Already Taken");
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
+                    }
+                }
+                else{
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
+                    }
+                    cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
+                    cpu->fetch_latch.has_inst = 0;
+                    cpu->decode_latch.has_inst = 0;
+                    cpu->analysis_latch.has_inst = 0;
+                    cpu->register_read_latch.has_inst = 0;
+                    cpu->adder_latch.has_inst = 0;
+                    cpu->multiplier_latch.has_inst = 0;
+                    cpu->divider_latch.has_inst = 0;
+                    cpu->memory1_latch = cpu->branch_latch;
+                    cpu->branch_latch.has_inst = 0;
+                    return;
+                }
             }
             else{
-                cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
-                printf("bgez branch not taken");
+                if(cpu->branch_latch.branch_taken == 1){
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
+                    }
+                    cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
+                    cpu->fetch_latch.has_inst = 0;
+                    cpu->decode_latch.has_inst = 0;
+                    cpu->analysis_latch.has_inst = 0;
+                    cpu->register_read_latch.has_inst = 0;
+                    cpu->adder_latch.has_inst = 0;
+                    cpu->multiplier_latch.has_inst = 0;
+                    cpu->divider_latch.has_inst = 0;
+                    cpu->memory1_latch = cpu->branch_latch;
+                    cpu->branch_latch.has_inst = 0;
+                    printf("bez not taken but should be Taken");
+                    return;
+                }
+                else{
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
+                    }
+                    printf("bez branch not taken");
+                }
             }
         }
         else if(strcmp(cpu->branch_latch.opcode,"blez") == 0){
             if(cpu->regs[atoi(cpu->branch_latch.rg1+1)].value >= 0){
-                cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 0;
-                cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
-                cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
-                cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
-                cpu->fetch_latch.has_inst = 0;
-                cpu->decode_latch.has_inst = 0;
-                cpu->analysis_latch.has_inst = 0;
-                cpu->register_read_latch.has_inst = 0;
-                cpu->adder_latch.has_inst = 0;
-                cpu->multiplier_latch.has_inst = 0;
-                cpu->divider_latch.has_inst = 0;
-                cpu->memory1_latch = cpu->branch_latch;
-                cpu->branch_latch.has_inst = 0;
-                return;
+                if(cpu->branch_latch.branch_taken == 1){
+                    printf("Branch Already Taken");
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
+                    }
+                }
+                else{
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
+                    }
+                    cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
+                    cpu->fetch_latch.has_inst = 0;
+                    cpu->decode_latch.has_inst = 0;
+                    cpu->analysis_latch.has_inst = 0;
+                    cpu->register_read_latch.has_inst = 0;
+                    cpu->adder_latch.has_inst = 0;
+                    cpu->multiplier_latch.has_inst = 0;
+                    cpu->divider_latch.has_inst = 0;
+                    cpu->memory1_latch = cpu->branch_latch;
+                    cpu->branch_latch.has_inst = 0;
+                    return;
+                }
             }
             else{
-                cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
-                printf("blez branch not taken");
+                if(cpu->branch_latch.branch_taken == 1){
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
+                    }
+                    cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
+                    cpu->fetch_latch.has_inst = 0;
+                    cpu->decode_latch.has_inst = 0;
+                    cpu->analysis_latch.has_inst = 0;
+                    cpu->register_read_latch.has_inst = 0;
+                    cpu->adder_latch.has_inst = 0;
+                    cpu->multiplier_latch.has_inst = 0;
+                    cpu->divider_latch.has_inst = 0;
+                    cpu->memory1_latch = cpu->branch_latch;
+                    cpu->branch_latch.has_inst = 0;
+                    printf("bez not taken but should be Taken");
+                    return;
+                }
+                else{
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
+                    }
+                    printf("bez branch not taken");
+                }
             }
         }
         else if(strcmp(cpu->branch_latch.opcode,"bgtz") == 0){
             if(cpu->regs[atoi(cpu->branch_latch.rg1+1)].value >= 0){
-                cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 0;
-                cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
-                cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
-                cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
-                cpu->fetch_latch.has_inst = 0;
-                cpu->decode_latch.has_inst = 0;
-                cpu->analysis_latch.has_inst = 0;
-                cpu->register_read_latch.has_inst = 0;
-                cpu->adder_latch.has_inst = 0;
-                cpu->multiplier_latch.has_inst = 0;
-                cpu->divider_latch.has_inst = 0;
-                cpu->memory1_latch = cpu->branch_latch;
-                cpu->branch_latch.has_inst = 0;
-                return;
+                if(cpu->branch_latch.branch_taken == 1){
+                    printf("Branch Already Taken");
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
+                    }
+                }
+                else{
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
+                    }
+                    cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
+                    cpu->fetch_latch.has_inst = 0;
+                    cpu->decode_latch.has_inst = 0;
+                    cpu->analysis_latch.has_inst = 0;
+                    cpu->register_read_latch.has_inst = 0;
+                    cpu->adder_latch.has_inst = 0;
+                    cpu->multiplier_latch.has_inst = 0;
+                    cpu->divider_latch.has_inst = 0;
+                    cpu->memory1_latch = cpu->branch_latch;
+                    cpu->branch_latch.has_inst = 0;
+                    return;
+                }
             }
             else{
-                cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
-                printf("bgtz branch not taken");
+                if(cpu->branch_latch.branch_taken == 1){
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
+                    }
+                    cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
+                    cpu->fetch_latch.has_inst = 0;
+                    cpu->decode_latch.has_inst = 0;
+                    cpu->analysis_latch.has_inst = 0;
+                    cpu->register_read_latch.has_inst = 0;
+                    cpu->adder_latch.has_inst = 0;
+                    cpu->multiplier_latch.has_inst = 0;
+                    cpu->divider_latch.has_inst = 0;
+                    cpu->memory1_latch = cpu->branch_latch;
+                    cpu->branch_latch.has_inst = 0;
+                    printf("bez not taken but should be Taken");
+                    return;
+                }
+                else{
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
+                    }
+                    printf("bez branch not taken");
+                }
             }
         }
         else if(strcmp(cpu->branch_latch.opcode,"bltz") == 0){
             if(cpu->regs[atoi(cpu->branch_latch.rg1+1)].value >= 0){
-                cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 0;
-                cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
-                cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
-                cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
-                cpu->fetch_latch.has_inst = 0;
-                cpu->decode_latch.has_inst = 0;
-                cpu->analysis_latch.has_inst = 0;
-                cpu->register_read_latch.has_inst = 0;
-                cpu->adder_latch.has_inst = 0;
-                cpu->multiplier_latch.has_inst = 0;
-                cpu->divider_latch.has_inst = 0;
-                cpu->memory1_latch = cpu->branch_latch;
-                cpu->branch_latch.has_inst = 0;
-                return;
+                if(cpu->branch_latch.branch_taken == 1){
+                    printf("Branch Already Taken");
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
+                    }
+                }
+                else{
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
+                    }
+                    cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
+                    cpu->fetch_latch.has_inst = 0;
+                    cpu->decode_latch.has_inst = 0;
+                    cpu->analysis_latch.has_inst = 0;
+                    cpu->register_read_latch.has_inst = 0;
+                    cpu->adder_latch.has_inst = 0;
+                    cpu->multiplier_latch.has_inst = 0;
+                    cpu->divider_latch.has_inst = 0;
+                    cpu->memory1_latch = cpu->branch_latch;
+                    cpu->branch_latch.has_inst = 0;
+                    return;
+                }
             }
             else{
-                cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
-                printf("bltz branch not taken");
+                if(cpu->branch_latch.branch_taken == 1){
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
+                    }
+                    cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
+                    cpu->fetch_latch.has_inst = 0;
+                    cpu->decode_latch.has_inst = 0;
+                    cpu->analysis_latch.has_inst = 0;
+                    cpu->register_read_latch.has_inst = 0;
+                    cpu->adder_latch.has_inst = 0;
+                    cpu->multiplier_latch.has_inst = 0;
+                    cpu->divider_latch.has_inst = 0;
+                    cpu->memory1_latch = cpu->branch_latch;
+                    cpu->branch_latch.has_inst = 0;
+                    printf("bez not taken but should be Taken");
+                    return;
+                }
+                else{
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
+                    }
+                    printf("bez branch not taken");
+                }
             }
-        }
-        if(cpu->branch_latch.buffer != -1){
-            strcpy(cpu->br_reg,cpu->branch_latch.rg1);
-            cpu->br_val = cpu->branch_latch.buffer;
-        }
-        else{
-            strcpy(cpu->br_reg,"NULL");
-            cpu->br_val = -1;
         }
         cpu->memory1_latch = cpu->branch_latch;
     }
@@ -1298,8 +1460,6 @@ void decode_unit(CPU* cpu){
 void fetch_unit(CPU* cpu){
     if(cpu->fetch_latch.has_inst == 1 && cpu->fetch_latch.halt_triggered == 0){
 
-        // implement BTB and prediction table
-        
         cpu->fetch_latch.pc = cpu->pc;
         cpu->pc++;
         char str1[128];
@@ -1367,6 +1527,66 @@ void fetch_unit(CPU* cpu){
         //     cpu->fetch_latch.has_inst = 0;
         //     return;
         // }
+
+        // implement BTB and prediction table
+        if(strcmp(cpu->fetch_latch.opcode,"bez") == 0){
+            if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
+                // cpu->fetch_latch.pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
+                cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
+                printf("bez branch Address %d & %d\n",cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern,cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target);
+                cpu->fetch_latch.branch_taken = 1;
+            }
+            else{
+                cpu->fetch_latch.branch_taken = 0;
+            }
+        }
+        if(strcmp(cpu->fetch_latch.opcode,"bgez") == 0){
+            if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
+                // cpu->fetch_latch.pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
+                cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
+                printf("bgez branch Address %d & %d\n",cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern,cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target);
+                cpu->fetch_latch.branch_taken = 1;
+            }
+            else{
+                cpu->fetch_latch.branch_taken = 0;
+            }
+        }
+        else if(strcmp(cpu->fetch_latch.opcode,"blez") == 0){
+            if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
+                // cpu->fetch_latch.pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
+                cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
+                printf("blez branch Address %d & %d\n",cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern,cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target);
+                cpu->fetch_latch.branch_taken = 1;
+            }
+            else{
+                cpu->fetch_latch.branch_taken = 0;
+            }
+        }
+        else if(strcmp(cpu->fetch_latch.opcode,"bgtz") == 0){
+            if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
+                // cpu->fetch_latch.pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
+                cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
+                printf("bgtz branch Address %d & %d\n",cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern,cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target);
+                cpu->fetch_latch.branch_taken = 1;
+            }
+            else{
+                cpu->fetch_latch.branch_taken = 0;
+            }
+        }
+        else if(strcmp(cpu->fetch_latch.opcode,"bltz") == 0){
+            if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
+                // cpu->fetch_latch.pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
+                cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
+                printf("bltz branch Address %d & %d\n",cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern,cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target);
+                cpu->fetch_latch.branch_taken = 1;
+            }
+            else{
+                cpu->fetch_latch.branch_taken = 0;
+            }
+        }
+
+        // BTB implementation ended
+        
         cpu->decode_latch = cpu->fetch_latch;
     }
     else if(cpu->fetch_latch.unfreeze == 1){
