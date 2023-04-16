@@ -75,6 +75,7 @@ typedef struct CPU
 	char add_reg[20];
 	int add_val;
 	int raw;
+	char freedit[20];
 
 	// The Pipeline
 	Stages fetch_latch; 
@@ -98,7 +99,7 @@ typedef struct CPU
 
 
 CPU*
-CPU_init();
+CPU_init(char* filename, char* option);
 
 Register*
 create_registers(int size);
@@ -108,10 +109,6 @@ create_btb(int size);
 
 Pt*
 create_pt(int size);
-
-
-void
-freed_registers(CPU* cpu,int size);
 
 int
 write_the_memory(long val, int num);
@@ -160,5 +157,8 @@ memory2_unit(CPU* cpu);
 
 int
 writeback_unit(CPU* cpu);
+
+void
+clear_forwarding(CPU* cpu);
 
 #endif
