@@ -43,7 +43,6 @@ typedef struct Stages
 	long buffer; // Temp value
 	char or1[20]; // oprand 1
 	char or2[20]; // oprand 2
-	bool forwarding; // IS data been forwarded
 	int halt_triggered; // ???
 	int unfreeze;
 	int branch_taken; // Is the branch Taken at Fetch
@@ -76,6 +75,8 @@ typedef struct CPU
 	int add_val;
 	int raw;
 	char freedit[20];
+	int reverse_branch;
+	int executedInstruction;
 
 	// The Pipeline
 	Stages fetch_latch; 
