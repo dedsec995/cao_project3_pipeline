@@ -102,7 +102,7 @@ void print_display(CPU *cpu){
 
    for (int reg=0; reg<REG_COUNT; reg++) {
        
-        printf("REG[%2d]   |   Value=%ld  \n",reg,cpu->regs[reg].value);
+        printf("REG[%2d]   |   Value=%ld  \n",reg,cpu->regs[reg].is_writing);
         printf("--------------------------------\n");
     }
     printf("================================\n");
@@ -316,7 +316,6 @@ int writeback_unit(CPU* cpu){
             printf("WB             : %s",cpu->instructions[cpu->writeback_latch.pc]);
         }
         cpu->executedInstruction++;
-        // printf("Buffer: %d\n",cpu->writeback_latch.buffer);
         if(strcmp(cpu->writeback_latch.opcode,"ret") == 0){
             cpu->writeback_latch.has_inst = 0;
             return(1);
@@ -355,11 +354,9 @@ void memory2_unit(CPU* cpu){
         if (strcmp(cpu->memory2_latch.opcode,"ld")==0){
             if (cpu->memory2_latch.or1[0] == 82){
                 cpu->memory2_latch.buffer = memory_map_val[cpu->memory2_latch.rg2_val/4];
-                // cpu->regs[atoi(cpu->memory2_latch.rg1+1)].value = load_the_memory(cpu->memory2_latch.rg2_val);
             }
             else{
                 cpu->memory2_latch.buffer = memory_map_val[atoi(cpu->memory2_latch.or1+1)/4];
-                // cpu->regs[atoi(cpu->memory2_latch.rg1+1)].value = load_the_memory(atoi(cpu->memory2_latch.or1+1));
             }
         }
         else if (strcmp(cpu->memory2_latch.opcode,"st")==0){
@@ -442,6 +439,7 @@ void branch_unit(CPU* cpu){
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
                     }
+                    cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
                     cpu->fetch_latch.has_inst = 0;
                     cpu->decode_latch.has_inst = 0;
                     cpu->analysis_latch.has_inst = 0;
@@ -461,7 +459,8 @@ void branch_unit(CPU* cpu){
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
                     }
-                    cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
+                    cpu->pc = (cpu->branch_latch.instAddr+4)/4;
+                    cpu->reverse_branch = 1;
                     cpu->fetch_latch.has_inst = 0;
                     cpu->decode_latch.has_inst = 0;
                     cpu->analysis_latch.has_inst = 0;
@@ -572,7 +571,8 @@ void branch_unit(CPU* cpu){
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
                     }
-                    cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
+                    cpu->pc = (cpu->branch_latch.instAddr+4)/4;
+                    cpu->reverse_branch = 1;
                     cpu->fetch_latch.has_inst = 0;
                     cpu->decode_latch.has_inst = 0;
                     cpu->analysis_latch.has_inst = 0;
@@ -624,10 +624,11 @@ void branch_unit(CPU* cpu){
                 if(cpu->branch_latch.branch_taken == 1){
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
-                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
-                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
                     }
-                    cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
+                    cpu->pc = (cpu->branch_latch.instAddr+4)/4;
+                    cpu->reverse_branch = 1;
                     cpu->fetch_latch.has_inst = 0;
                     cpu->decode_latch.has_inst = 0;
                     cpu->analysis_latch.has_inst = 0;
@@ -679,10 +680,11 @@ void branch_unit(CPU* cpu){
                 if(cpu->branch_latch.branch_taken == 1){
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
-                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
-                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
+                    if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
+                        cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
                     }
-                    cpu->pc = cpu->btb[(cpu->branch_latch.instAddr/4)%16].target/4;
+                    cpu->pc = (cpu->branch_latch.instAddr+4)/4;
+                    cpu->reverse_branch = 1;
                     cpu->fetch_latch.has_inst = 0;
                     cpu->decode_latch.has_inst = 0;
                     cpu->analysis_latch.has_inst = 0;
