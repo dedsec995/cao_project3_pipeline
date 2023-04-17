@@ -1,0 +1,5 @@
+Utasv
+- Reworked on the pipeline and corrected the pipeline from project 2
+- Changed Dataforwarding and optimized the code
+Amit
+- Implemented the btb and branching logic
