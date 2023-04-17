@@ -162,4 +162,7 @@ writeback_unit(CPU* cpu);
 void
 clear_forwarding(CPU* cpu);
 
+int
+get_tag(long num);
+
 #endif

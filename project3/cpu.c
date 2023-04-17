@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <math.h>
 #include "cpu.h"
 
 #define REG_COUNT 16
@@ -192,6 +193,28 @@ int write_the_memory(long val,int num){
     }
     fclose(filePointer);
     return (-1);
+}
+
+int get_tag(long num){
+    long long bin = 0;
+    int rem, q = 1;
+    while (num!=0) {
+        rem = num % 2;
+        num /= 2;
+        bin += rem * q;
+        q *= 10;
+    }
+    for(int j=0;j<=5;j++){
+        bin = bin/10;
+    }
+    int deci = 0, i = 0, reme;
+    while (bin!=0) {
+        reme = bin % 10;
+        bin /= 10;
+        deci += reme * pow(2, i);
+        ++i;
+    }
+    return(deci);
 }
 
 /*
@@ -434,7 +457,7 @@ void branch_unit(CPU* cpu){
                     }
                 }
                 else{
-                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
@@ -454,7 +477,7 @@ void branch_unit(CPU* cpu){
             }
             else{
                 if(cpu->branch_latch.branch_taken == 1){
-                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
@@ -490,7 +513,7 @@ void branch_unit(CPU* cpu){
                     }
                 }
                 else{
-                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
@@ -510,7 +533,7 @@ void branch_unit(CPU* cpu){
             }
             else{
                 if(cpu->branch_latch.branch_taken == 1){
-                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
@@ -530,6 +553,8 @@ void branch_unit(CPU* cpu){
                     return;
                 }
                 else{
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
                     }
@@ -546,7 +571,7 @@ void branch_unit(CPU* cpu){
                     }
                 }
                 else{
-                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
@@ -566,7 +591,7 @@ void branch_unit(CPU* cpu){
             }
             else{
                 if(cpu->branch_latch.branch_taken == 1){
-                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
@@ -602,7 +627,7 @@ void branch_unit(CPU* cpu){
                     }
                 }
                 else{
-                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
@@ -622,7 +647,7 @@ void branch_unit(CPU* cpu){
             }
             else{
                 if(cpu->branch_latch.branch_taken == 1){
-                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
@@ -658,7 +683,7 @@ void branch_unit(CPU* cpu){
                     }
                 }
                 else{
-                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern++;
@@ -678,7 +703,7 @@ void branch_unit(CPU* cpu){
             }
             else{
                 if(cpu->branch_latch.branch_taken == 1){
-                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = 1;
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
@@ -1348,55 +1373,55 @@ void fetch_unit(CPU* cpu){
         }
         // implement BTB and prediction table
         if(strcmp(cpu->fetch_latch.opcode,"bez") == 0){
-            if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
-                // cpu->fetch_latch.pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
-                cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
-                // printf("bez branch Address %d & %d\n",cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern,cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target);
-                cpu->fetch_latch.branch_taken = 1;
+            if(cpu->btb[(cpu->fetch_latch.instAddr/4)%16].tag == get_tag(cpu->fetch_latch.instAddr)){
+                if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
+                    cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
+                    cpu->fetch_latch.branch_taken = 1;
+                }
             }
             else{
                 cpu->fetch_latch.branch_taken = 0;
             }
         }
         if(strcmp(cpu->fetch_latch.opcode,"bgez") == 0){
-            if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
-                // cpu->fetch_latch.pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
-                cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
-                // printf("bgez branch Address %d & %d\n",cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern,cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target);
-                cpu->fetch_latch.branch_taken = 1;
+            if(cpu->btb[(cpu->fetch_latch.instAddr/4)%16].tag == get_tag(cpu->fetch_latch.instAddr)){
+                if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
+                    cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
+                    cpu->fetch_latch.branch_taken = 1;
+                }
             }
             else{
                 cpu->fetch_latch.branch_taken = 0;
             }
         }
         else if(strcmp(cpu->fetch_latch.opcode,"blez") == 0){
-            if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
-                // cpu->fetch_latch.pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
-                cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
-                // printf("blez branch Address %d & %d\n",cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern,cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target);
-                cpu->fetch_latch.branch_taken = 1;
+            if(cpu->btb[(cpu->fetch_latch.instAddr/4)%16].tag == get_tag(cpu->fetch_latch.instAddr)){
+                if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
+                    cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
+                    cpu->fetch_latch.branch_taken = 1;
+                }
             }
             else{
                 cpu->fetch_latch.branch_taken = 0;
             }
         }
         else if(strcmp(cpu->fetch_latch.opcode,"bgtz") == 0){
-            if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
-                // cpu->fetch_latch.pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
-                cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
-                // printf("bgtz branch Address %d & %d\n",cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern,cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target);
-                cpu->fetch_latch.branch_taken = 1;
+            if(cpu->btb[(cpu->fetch_latch.instAddr/4)%16].tag == get_tag(cpu->fetch_latch.instAddr)){
+                if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
+                    cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
+                    cpu->fetch_latch.branch_taken = 1;
+                }
             }
             else{
                 cpu->fetch_latch.branch_taken = 0;
             }
         }
         else if(strcmp(cpu->fetch_latch.opcode,"bltz") == 0){
-            if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
-                // cpu->fetch_latch.pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
-                cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
-                // printf("bltz branch Address %d & %d\n",cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern,cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target);
-                cpu->fetch_latch.branch_taken = 1;
+            if(cpu->btb[(cpu->fetch_latch.instAddr/4)%16].tag == get_tag(cpu->fetch_latch.instAddr)){
+                if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
+                    cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
+                    cpu->fetch_latch.branch_taken = 1;
+                }
             }
             else{
                 cpu->fetch_latch.branch_taken = 0;
