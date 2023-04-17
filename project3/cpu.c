@@ -102,7 +102,7 @@ void print_display(CPU *cpu){
 
    for (int reg=0; reg<REG_COUNT; reg++) {
        
-        printf("REG[%2d]   |   Value=%ld  \n",reg,cpu->regs[reg].is_writing);
+        printf("REG[%2d]   |   Value=%ld  \n",reg,cpu->regs[reg].value);
         printf("--------------------------------\n");
     }
     printf("================================\n");
