@@ -474,11 +474,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    cpu->adder_latch.halt_triggered = 0;
-                    cpu->register_read_latch.halt_triggered = 0;
-                    cpu->analysis_latch.halt_triggered = 0;
-                    cpu->decode_latch.halt_triggered = 0;
-                    cpu->fetch_latch.halt_triggered = 0;
+                    if(cpu->register_read_latch.halt_triggered == 1){
+                        cpu->hazard++;
+                        cpu->adder_latch.halt_triggered = 0;
+                        cpu->register_read_latch.halt_triggered = 0;
+                        cpu->analysis_latch.halt_triggered = 0;
+                        cpu->decode_latch.halt_triggered = 0;
+                        cpu->fetch_latch.halt_triggered = 0;
+                    }
                     for (int i=0; i<16; i++){
                         cpu->regs[i].is_writing = 0;
                     }
@@ -503,11 +506,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    cpu->adder_latch.halt_triggered = 0;
-                    cpu->register_read_latch.halt_triggered = 0;
-                    cpu->analysis_latch.halt_triggered = 0;
-                    cpu->decode_latch.halt_triggered = 0;
-                    cpu->fetch_latch.halt_triggered = 0;
+                    if(cpu->register_read_latch.halt_triggered == 1){
+                        cpu->hazard++;
+                        cpu->adder_latch.halt_triggered = 0;
+                        cpu->register_read_latch.halt_triggered = 0;
+                        cpu->analysis_latch.halt_triggered = 0;
+                        cpu->decode_latch.halt_triggered = 0;
+                        cpu->fetch_latch.halt_triggered = 0;
+                    }
                     for (int i=0; i<16; i++){
                         cpu->regs[i].is_writing = 0;
                     }
@@ -547,11 +553,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    cpu->adder_latch.halt_triggered = 0;
-                    cpu->register_read_latch.halt_triggered = 0;
-                    cpu->analysis_latch.halt_triggered = 0;
-                    cpu->decode_latch.halt_triggered = 0;
-                    cpu->fetch_latch.halt_triggered = 0;
+                    if(cpu->register_read_latch.halt_triggered == 1){
+                        cpu->hazard++;
+                        cpu->adder_latch.halt_triggered = 0;
+                        cpu->register_read_latch.halt_triggered = 0;
+                        cpu->analysis_latch.halt_triggered = 0;
+                        cpu->decode_latch.halt_triggered = 0;
+                        cpu->fetch_latch.halt_triggered = 0;
+                    }
                     for (int i=0; i<16; i++){
                         cpu->regs[i].is_writing = 0;
                     }
@@ -577,11 +586,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    cpu->adder_latch.halt_triggered = 0;
-                    cpu->register_read_latch.halt_triggered = 0;
-                    cpu->analysis_latch.halt_triggered = 0;
-                    cpu->decode_latch.halt_triggered = 0;
-                    cpu->fetch_latch.halt_triggered = 0;
+                    if(cpu->register_read_latch.halt_triggered == 1){
+                        cpu->hazard++;
+                        cpu->adder_latch.halt_triggered = 0;
+                        cpu->register_read_latch.halt_triggered = 0;
+                        cpu->analysis_latch.halt_triggered = 0;
+                        cpu->decode_latch.halt_triggered = 0;
+                        cpu->fetch_latch.halt_triggered = 0;
+                    }
                     for (int i=0; i<16; i++){
                         cpu->regs[i].is_writing = 0;
                     }
@@ -623,11 +635,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    cpu->adder_latch.halt_triggered = 0;
-                    cpu->register_read_latch.halt_triggered = 0;
-                    cpu->analysis_latch.halt_triggered = 0;
-                    cpu->decode_latch.halt_triggered = 0;
-                    cpu->fetch_latch.halt_triggered = 0;
+                    if(cpu->register_read_latch.halt_triggered == 1){
+                        cpu->hazard++;
+                        cpu->adder_latch.halt_triggered = 0;
+                        cpu->register_read_latch.halt_triggered = 0;
+                        cpu->analysis_latch.halt_triggered = 0;
+                        cpu->decode_latch.halt_triggered = 0;
+                        cpu->fetch_latch.halt_triggered = 0;
+                    }
                     for (int i=0; i<16; i++){
                         cpu->regs[i].is_writing = 0;
                     }
@@ -652,11 +667,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    cpu->adder_latch.halt_triggered = 0;
-                    cpu->register_read_latch.halt_triggered = 0;
-                    cpu->analysis_latch.halt_triggered = 0;
-                    cpu->decode_latch.halt_triggered = 0;
-                    cpu->fetch_latch.halt_triggered = 0;
+                    if(cpu->register_read_latch.halt_triggered == 1){
+                        cpu->hazard++;
+                        cpu->adder_latch.halt_triggered = 0;
+                        cpu->register_read_latch.halt_triggered = 0;
+                        cpu->analysis_latch.halt_triggered = 0;
+                        cpu->decode_latch.halt_triggered = 0;
+                        cpu->fetch_latch.halt_triggered = 0;
+                    }
                     for (int i=0; i<16; i++){
                         cpu->regs[i].is_writing = 0;
                     }
@@ -695,11 +713,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    cpu->adder_latch.halt_triggered = 0;
-                    cpu->register_read_latch.halt_triggered = 0;
-                    cpu->analysis_latch.halt_triggered = 0;
-                    cpu->decode_latch.halt_triggered = 0;
-                    cpu->fetch_latch.halt_triggered = 0;
+                    if(cpu->register_read_latch.halt_triggered == 1){
+                        cpu->hazard++;
+                        cpu->adder_latch.halt_triggered = 0;
+                        cpu->register_read_latch.halt_triggered = 0;
+                        cpu->analysis_latch.halt_triggered = 0;
+                        cpu->decode_latch.halt_triggered = 0;
+                        cpu->fetch_latch.halt_triggered = 0;
+                    }
                     for (int i=0; i<16; i++){
                         cpu->regs[i].is_writing = 0;
                     }
@@ -724,11 +745,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    cpu->adder_latch.halt_triggered = 0;
-                    cpu->register_read_latch.halt_triggered = 0;
-                    cpu->analysis_latch.halt_triggered = 0;
-                    cpu->decode_latch.halt_triggered = 0;
-                    cpu->fetch_latch.halt_triggered = 0;
+                    if(cpu->register_read_latch.halt_triggered == 1){
+                        cpu->hazard++;
+                        cpu->adder_latch.halt_triggered = 0;
+                        cpu->register_read_latch.halt_triggered = 0;
+                        cpu->analysis_latch.halt_triggered = 0;
+                        cpu->decode_latch.halt_triggered = 0;
+                        cpu->fetch_latch.halt_triggered = 0;
+                    }
                     for (int i=0; i<16; i++){
                         cpu->regs[i].is_writing = 0;
                     }
@@ -767,11 +791,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    cpu->adder_latch.halt_triggered = 0;
-                    cpu->register_read_latch.halt_triggered = 0;
-                    cpu->analysis_latch.halt_triggered = 0;
-                    cpu->decode_latch.halt_triggered = 0;
-                    cpu->fetch_latch.halt_triggered = 0;
+                    if(cpu->register_read_latch.halt_triggered == 1){
+                        cpu->hazard++;
+                        cpu->adder_latch.halt_triggered = 0;
+                        cpu->register_read_latch.halt_triggered = 0;
+                        cpu->analysis_latch.halt_triggered = 0;
+                        cpu->decode_latch.halt_triggered = 0;
+                        cpu->fetch_latch.halt_triggered = 0;
+                    }
                     for (int i=0; i<16; i++){
                         cpu->regs[i].is_writing = 0;
                     }
@@ -796,11 +823,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    cpu->adder_latch.halt_triggered = 0;
-                    cpu->register_read_latch.halt_triggered = 0;
-                    cpu->analysis_latch.halt_triggered = 0;
-                    cpu->decode_latch.halt_triggered = 0;
-                    cpu->fetch_latch.halt_triggered = 0;
+                    if(cpu->register_read_latch.halt_triggered == 1){
+                        cpu->hazard++;
+                        cpu->adder_latch.halt_triggered = 0;
+                        cpu->register_read_latch.halt_triggered = 0;
+                        cpu->analysis_latch.halt_triggered = 0;
+                        cpu->decode_latch.halt_triggered = 0;
+                        cpu->fetch_latch.halt_triggered = 0;
+                    }
                     for (int i=0; i<16; i++){
                         cpu->regs[i].is_writing = 0;
                     }
@@ -1016,7 +1046,7 @@ void  register_read_unit(CPU* cpu){
             cpu->register_read_latch.rg3_val = cpu->regs[atoi(cpu->register_read_latch.or2+1)].value;
             // printf("%s: %d\n",cpu->register_read_latch.rg3,cpu->register_read_latch.rg3_val);
         }
-        if(cpu->regs[atoi(cpu->register_read_latch.or1+1)].freed_this_cycle == 1 && strcmp(cpu->register_read_latch.or1,cpu->freedit) == 0){
+        if(cpu->register_read_latch.or1[0] == 82 && cpu->regs[atoi(cpu->register_read_latch.or1+1)].freed_this_cycle == 1 && strcmp(cpu->register_read_latch.or1,cpu->freedit) == 0){
             cpu->raw = 1;
             // printf("%s %s\n",cpu->register_read_latch.or1,cpu->freedit);
             // printf("Cannot Read as just written1\n");
@@ -1476,7 +1506,7 @@ void fetch_unit(CPU* cpu){
             if(cpu->btb[(cpu->fetch_latch.instAddr/4)%16].tag == get_tag(cpu->fetch_latch.instAddr)){
                 if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
                     cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
-                    cpu->fetch_latch.branch_taken = 1;);
+                    cpu->fetch_latch.branch_taken = 1;
                 }
                 else{
                     cpu->fetch_latch.branch_taken = 0;
