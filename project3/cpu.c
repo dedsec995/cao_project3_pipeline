@@ -104,6 +104,7 @@ void print_display(CPU *cpu){
    for (int reg=0; reg<REG_COUNT; reg++) {
        
         printf("REG[%2d]   |   Value=%ld  \n",reg,cpu->regs[reg].value);
+        // printf("REG[%2d]   |   Writing=%ld  \n",reg,cpu->regs[reg].is_writing);
         printf("--------------------------------\n");
     }
     printf("================================\n");
@@ -315,7 +316,7 @@ void simulate(CPU* cpu){
         print_display(cpu);
         cpu->clock++;
         cpu->fetch_latch.has_inst = 1;  
-        if(cpu->clock > 3000){
+        if(cpu->clock > 100000){
             return;
         }
         if(strcmp(options,"pipeline") == 0){
@@ -349,13 +350,13 @@ int writeback_unit(CPU* cpu){
         if(strcmp(cpu->writeback_latch.opcode,"bez") == 0 || strcmp(cpu->writeback_latch.opcode,"bgez") == 0 || strcmp(cpu->writeback_latch.opcode,"blez") == 0 | strcmp(cpu->writeback_latch.opcode,"bgtz") == 0 || strcmp(cpu->writeback_latch.opcode,"bltz") == 0){}
         else{
             cpu->regs[atoi(cpu->writeback_latch.rg1+1)].value = cpu->writeback_latch.buffer;
-        }
-        if(cpu->regs[atoi(cpu->writeback_latch.rg1+1)].is_writing > 0){
-            cpu->regs[atoi(cpu->writeback_latch.rg1+1)].is_writing--;
+            if(cpu->regs[atoi(cpu->writeback_latch.rg1+1)].is_writing > 0){
+                cpu->regs[atoi(cpu->writeback_latch.rg1+1)].is_writing--;
             if(cpu->regs[atoi(cpu->writeback_latch.rg1+1)].is_writing == 0){
                 cpu->regs[atoi(cpu->writeback_latch.rg1+1)].freed_this_cycle = 1;
                 strcpy(cpu->freedit,cpu->writeback_latch.rg1);
             }
+        }
         }
         return(0);
     }
@@ -436,6 +437,7 @@ void branch_unit(CPU* cpu){
         if(strcmp(options,"pipeline") == 0){
             printf("BR             : %s",cpu->instructions[cpu->branch_latch.pc]);
         }
+        // printf("Register: %d\n", cpu->branch_latch.rg1_val);
         if(strcmp(cpu->branch_latch.opcode,"ret") == 0){
             cpu->memory1_latch=cpu->branch_latch;
             return;
@@ -472,6 +474,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
+                    cpu->adder_latch.halt_triggered = 0;
+                    cpu->register_read_latch.halt_triggered = 0;
+                    cpu->analysis_latch.halt_triggered = 0;
+                    cpu->decode_latch.halt_triggered = 0;
+                    cpu->fetch_latch.halt_triggered = 0;
+                    for (int i=0; i<16; i++){
+                        cpu->regs[i].is_writing = 0;
+                    }
                     return;
                 }
             }
@@ -493,6 +503,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
+                    cpu->adder_latch.halt_triggered = 0;
+                    cpu->register_read_latch.halt_triggered = 0;
+                    cpu->analysis_latch.halt_triggered = 0;
+                    cpu->decode_latch.halt_triggered = 0;
+                    cpu->fetch_latch.halt_triggered = 0;
+                    for (int i=0; i<16; i++){
+                        cpu->regs[i].is_writing = 0;
+                    }
                     // printf("bez not taken but should be Taken");
                     return;
                 }
@@ -513,6 +531,7 @@ void branch_unit(CPU* cpu){
                     }
                 }
                 else{
+                    // printf("Branch Not Taken2");
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern < 7){
@@ -528,11 +547,20 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
+                    cpu->adder_latch.halt_triggered = 0;
+                    cpu->register_read_latch.halt_triggered = 0;
+                    cpu->analysis_latch.halt_triggered = 0;
+                    cpu->decode_latch.halt_triggered = 0;
+                    cpu->fetch_latch.halt_triggered = 0;
+                    for (int i=0; i<16; i++){
+                        cpu->regs[i].is_writing = 0;
+                    }
                     return;
                 }
             }
             else{
                 if(cpu->branch_latch.branch_taken == 1){
+                    // printf("Branch Taken3");
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
@@ -549,16 +577,25 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    // printf("bez not taken but should be Taken");
+                    cpu->adder_latch.halt_triggered = 0;
+                    cpu->register_read_latch.halt_triggered = 0;
+                    cpu->analysis_latch.halt_triggered = 0;
+                    cpu->decode_latch.halt_triggered = 0;
+                    cpu->fetch_latch.halt_triggered = 0;
+                    for (int i=0; i<16; i++){
+                        cpu->regs[i].is_writing = 0;
+                    }
+                    // printf("bgez not taken but should be Taken");
                     return;
                 }
                 else{
+                    // printf("Branch Not Taken4");
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
                     cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
                     }
-                    // printf("bez branch not taken");
+                    // printf("bgez branch not taken");
                 }
             }
         }
@@ -586,6 +623,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
+                    cpu->adder_latch.halt_triggered = 0;
+                    cpu->register_read_latch.halt_triggered = 0;
+                    cpu->analysis_latch.halt_triggered = 0;
+                    cpu->decode_latch.halt_triggered = 0;
+                    cpu->fetch_latch.halt_triggered = 0;
+                    for (int i=0; i<16; i++){
+                        cpu->regs[i].is_writing = 0;
+                    }
                     return;
                 }
             }
@@ -607,6 +652,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
+                    cpu->adder_latch.halt_triggered = 0;
+                    cpu->register_read_latch.halt_triggered = 0;
+                    cpu->analysis_latch.halt_triggered = 0;
+                    cpu->decode_latch.halt_triggered = 0;
+                    cpu->fetch_latch.halt_triggered = 0;
+                    for (int i=0; i<16; i++){
+                        cpu->regs[i].is_writing = 0;
+                    }
                     // printf("bez not taken but should be Taken");
                     return;
                 }
@@ -642,6 +695,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
+                    cpu->adder_latch.halt_triggered = 0;
+                    cpu->register_read_latch.halt_triggered = 0;
+                    cpu->analysis_latch.halt_triggered = 0;
+                    cpu->decode_latch.halt_triggered = 0;
+                    cpu->fetch_latch.halt_triggered = 0;
+                    for (int i=0; i<16; i++){
+                        cpu->regs[i].is_writing = 0;
+                    }
                     return;
                 }
             }
@@ -663,6 +724,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
+                    cpu->adder_latch.halt_triggered = 0;
+                    cpu->register_read_latch.halt_triggered = 0;
+                    cpu->analysis_latch.halt_triggered = 0;
+                    cpu->decode_latch.halt_triggered = 0;
+                    cpu->fetch_latch.halt_triggered = 0;
+                    for (int i=0; i<16; i++){
+                        cpu->regs[i].is_writing = 0;
+                    }
                     // printf("bez not taken but should be Taken");
                     return;
                 }
@@ -698,6 +767,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
+                    cpu->adder_latch.halt_triggered = 0;
+                    cpu->register_read_latch.halt_triggered = 0;
+                    cpu->analysis_latch.halt_triggered = 0;
+                    cpu->decode_latch.halt_triggered = 0;
+                    cpu->fetch_latch.halt_triggered = 0;
+                    for (int i=0; i<16; i++){
+                        cpu->regs[i].is_writing = 0;
+                    }
                     return;
                 }
             }
@@ -719,6 +796,14 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
+                    cpu->adder_latch.halt_triggered = 0;
+                    cpu->register_read_latch.halt_triggered = 0;
+                    cpu->analysis_latch.halt_triggered = 0;
+                    cpu->decode_latch.halt_triggered = 0;
+                    cpu->fetch_latch.halt_triggered = 0;
+                    for (int i=0; i<16; i++){
+                        cpu->regs[i].is_writing = 0;
+                    }
                     // printf("bez not taken but should be Taken");
                     return;
                 }
@@ -769,7 +854,6 @@ void divider_unit(CPU* cpu){
             }
         }
         if(strcmp(cpu->divider_latch.opcode,"add") == 0 || strcmp(cpu->divider_latch.opcode,"sub") == 0 || strcmp(cpu->divider_latch.opcode,"set") == 0 || strcmp(cpu->divider_latch.opcode,"mul") == 0 || strcmp(cpu->divider_latch.opcode,"div") == 0){
-        // if(strcmp(cpu->divider_latch.opcode,"div") == 0){
             strcpy(cpu->div_reg,cpu->divider_latch.rg1);
             cpu->div_val = cpu->divider_latch.buffer;
         }
@@ -820,7 +904,6 @@ void multiplier_unit(CPU* cpu){
             strcpy(cpu->mul_reg,"NULL");
             cpu->mul_val = -1;
         }
-        // printf("Buffer: %d\n",cpu->multiplier_latch.buffer);
         cpu->divider_latch = cpu->multiplier_latch;
     }
     else if (cpu->multiplier_latch.halt_triggered==1){
@@ -885,7 +968,9 @@ void adder_unit(CPU* cpu){
                     cpu->adder_latch.rg2_val = cpu->adder_latch.rg2_val;
             }
         }
-        if(strcmp(cpu->adder_latch.opcode,"st") != 0 || strcmp(cpu->adder_latch.opcode,"ret") != 0){
+        if(strcmp(cpu->adder_latch.opcode,"st") == 0 || strcmp(cpu->adder_latch.opcode,"ret") == 0 || strcmp(cpu->adder_latch.opcode,"bez") == 0 || strcmp(cpu->adder_latch.opcode,"bgez") == 0 || strcmp(cpu->adder_latch.opcode,"blez") == 0 || strcmp(cpu->adder_latch.opcode,"bgtz") == 0 || strcmp(cpu->adder_latch.opcode,"bltz") == 0){
+        }
+        else{
             cpu->regs[atoi(cpu->adder_latch.rg1+1)].is_writing++;
         }
         if(strcmp(cpu->adder_latch.opcode,"add") == 0 || strcmp(cpu->adder_latch.opcode,"sub") == 0 || strcmp(cpu->adder_latch.opcode,"set") == 0){
@@ -896,6 +981,7 @@ void adder_unit(CPU* cpu){
             strcpy(cpu->add_reg,"NULL");
             cpu->add_val = -1;
         }
+        // printf("buffer: %d\n", cpu->adder_latch.buffer);
         cpu->multiplier_latch = cpu->adder_latch;
     }
     else if (cpu->adder_latch.halt_triggered==1){
@@ -1081,7 +1167,7 @@ void  register_read_unit(CPU* cpu){
         }
         cpu->adder_latch = cpu->register_read_latch;
     }
-    else if (cpu->register_read_latch.halt_triggered==1){
+    else if (cpu->register_read_latch.has_inst == 1 && cpu->register_read_latch.halt_triggered==1){
         int sstall1 = 0;
         int sstall2 = 0;
         int frw1 = 0;
@@ -1177,8 +1263,6 @@ void  register_read_unit(CPU* cpu){
         if(strcmp(cpu->register_read_latch.opcode,"add") == 0 || strcmp(cpu->register_read_latch.opcode,"sub") == 0 || strcmp(cpu->register_read_latch.opcode,"set") == 0 || strcmp(cpu->register_read_latch.opcode,"mul") == 0 || strcmp(cpu->register_read_latch.opcode,"div") == 0){
             if (cpu->register_read_latch.or1[0] == 82){
                 if(cpu->regs[atoi(cpu->register_read_latch.or1+1)].is_writing < 1){
-                    // Halt because of OR1
-                    // printf("Unblock because of: %s\n",cpu->register_read_latch.or1);
                     sstall1 = 1;
                 }
                 else{
@@ -1190,7 +1274,6 @@ void  register_read_unit(CPU* cpu){
             }
             if(cpu->register_read_latch.or2[0] == 82){
                 if(cpu->regs[atoi(cpu->register_read_latch.or2+1)].is_writing < 1){
-                    // Halt because of OR2   
                     sstall2 = 1;
                 }
                 else{
@@ -1200,39 +1283,55 @@ void  register_read_unit(CPU* cpu){
             else{
             sstall2 = 1; 
             }
-            if(strcmp(cpu->register_read_latch.or1,cpu->add_reg) == 0 || strcmp(cpu->register_read_latch.or1,cpu->mul_reg) == 0 || strcmp(cpu->register_read_latch.or1,cpu->div_reg) == 0 ){
-                if(strcmp(cpu->register_read_latch.or1,cpu->add_reg) == 0){  // Forward value of ADD
-                    strcpy(cpu->register_read_latch.rg2,cpu->add_reg);
-                    cpu->register_read_latch.rg2_val = cpu->add_val;
+            if(cpu->register_read_latch.or1[0] == 82){
+                if(strcmp(cpu->register_read_latch.or1,cpu->add_reg) == 0 || strcmp(cpu->register_read_latch.or1,cpu->mul_reg) == 0 || strcmp(cpu->register_read_latch.or1,cpu->div_reg) == 0 ){
+                    if(strcmp(cpu->register_read_latch.or1,cpu->add_reg) == 0){  // Forward value of ADD
+                        strcpy(cpu->register_read_latch.rg2,cpu->add_reg);
+                        cpu->register_read_latch.rg2_val = cpu->add_val;
+                    }
+                    else if(strcmp(cpu->register_read_latch.or1,cpu->mul_reg) == 0){ // Forward value of MUL
+                    strcpy(cpu->register_read_latch.rg2,cpu->mul_reg);
+                        cpu->register_read_latch.rg2_val = cpu->mul_val;
+                    }
+                    else if(strcmp(cpu->register_read_latch.or1,cpu->div_reg) == 0){ // Forward value of DIV
+                        strcpy(cpu->register_read_latch.rg2,cpu->div_reg);
+                        cpu->register_read_latch.rg2_val = cpu->div_val;
+                    }
+                    frw1 = 1;
                 }
-                else if(strcmp(cpu->register_read_latch.or1,cpu->mul_reg) == 0){ // Forward value of MUL
-                strcpy(cpu->register_read_latch.rg2,cpu->mul_reg);
-                    cpu->register_read_latch.rg2_val = cpu->mul_val;
+                else{
+                    frw1 = 0;
                 }
-                else if(strcmp(cpu->register_read_latch.or1,cpu->div_reg) == 0){ // Forward value of DIV
-                    strcpy(cpu->register_read_latch.rg2,cpu->div_reg);
-                    cpu->register_read_latch.rg2_val = cpu->div_val;
-                }
+            }
+            else{
                 frw1 = 1;
             }
-            if(strcmp(cpu->register_read_latch.or2,cpu->add_reg) == 0 || strcmp(cpu->register_read_latch.or2,cpu->mul_reg) == 0 || strcmp(cpu->register_read_latch.or1,cpu->div_reg) == 0 ){
-                if(strcmp(cpu->register_read_latch.or1,cpu->add_reg) == 0){  // Forward value of ADD
-                    strcpy(cpu->register_read_latch.rg3,cpu->add_reg);
-                    cpu->register_read_latch.rg3_val = cpu->add_val;
+            if(cpu->register_read_latch.or2[0] == 82){
+                if(strcmp(cpu->register_read_latch.or2,cpu->add_reg) == 0 || strcmp(cpu->register_read_latch.or2,cpu->mul_reg) == 0 || strcmp(cpu->register_read_latch.or1,cpu->div_reg) == 0 ){
+                    if(strcmp(cpu->register_read_latch.or1,cpu->add_reg) == 0){  // Forward value of ADD
+                        strcpy(cpu->register_read_latch.rg3,cpu->add_reg);
+                        cpu->register_read_latch.rg3_val = cpu->add_val;
+                    }
+                    else if(strcmp(cpu->register_read_latch.or1,cpu->mul_reg) == 0){ // Forward value of MUL
+                        strcpy(cpu->register_read_latch.rg3,cpu->mul_reg);
+                        cpu->register_read_latch.rg3_val = cpu->mul_val;
+                    }
+                    else if(strcmp(cpu->register_read_latch.or1,cpu->div_reg) == 0){ // Forward value of DIV
+                        strcpy(cpu->register_read_latch.rg3,cpu->div_reg);
+                        cpu->register_read_latch.rg3_val = cpu->div_val;
+                    }
+                    frw2 = 1;
                 }
-                else if(strcmp(cpu->register_read_latch.or1,cpu->mul_reg) == 0){ // Forward value of MUL
-                    strcpy(cpu->register_read_latch.rg3,cpu->mul_reg);
-                    cpu->register_read_latch.rg3_val = cpu->mul_val;
+                else{
+                    frw2 = 0;
                 }
-                else if(strcmp(cpu->register_read_latch.or1,cpu->div_reg) == 0){ // Forward value of DIV
-                    strcpy(cpu->register_read_latch.rg3,cpu->div_reg);
-                    cpu->register_read_latch.rg3_val = cpu->div_val;
-                }
+            }
+            else{
                 frw2 = 1;
             }
             // printf("Add: %s\nMul: %s\nDiv: %s\n",cpu->add_reg,cpu->mul_reg,cpu->div_reg);
-            // printf("Stall1: %d\nStall2: %d\n",sstall1,sstall2);
-            if(frw1 == 1 || frw2 == 1){
+            // printf("Stall1: %d\nStall2: %d\nfw1: %d\nfw2: %d\n",sstall1,sstall2,frw1,frw2);
+            if(frw1 == 1 && frw2 == 1){
                 cpu->analysis_latch.halt_triggered = 0;
                 cpu->decode_latch.halt_triggered = 0;
                 cpu->fetch_latch.halt_triggered = 0;
@@ -1265,7 +1364,7 @@ void analysis_unit(CPU* cpu){
         }
         cpu->register_read_latch=cpu->analysis_latch;
     }
-    else if(cpu->analysis_latch.halt_triggered==1){
+    else if(cpu->analysis_latch.has_inst == 1 && cpu->analysis_latch.halt_triggered==1){
         if(strcmp(options,"pipeline") == 0){
             printf("IA             : %s",cpu->instructions[cpu->analysis_latch.pc]);
         }
@@ -1287,7 +1386,7 @@ void decode_unit(CPU* cpu){
         }
         cpu->analysis_latch = cpu->decode_latch;
     }
-    else if (cpu->decode_latch.halt_triggered==1){
+    else if (cpu->decode_latch.has_inst == 1 && cpu->decode_latch.halt_triggered==1){
         if(strcmp(options,"pipeline") == 0){
             printf("ID             : %s",cpu->instructions[cpu->decode_latch.pc]);
         }
@@ -1332,7 +1431,6 @@ void fetch_unit(CPU* cpu){
         token = realloc(token, (arr_len+1) * sizeof(char *));
         token[arr_len] = NULL;
         cpu->fetch_latch.instLen = arr_len;
-
         //-------------------------------------Dynamic Spliting------------------------------------------
         if(arr_len > 4 ){
             cpu->fetch_latch.instAddr = (atoi)(token[0]);
@@ -1366,6 +1464,8 @@ void fetch_unit(CPU* cpu){
             strcpy(cpu->fetch_latch.opcode,token[1]);
             cpu->fetch_latch.opcode[strcspn(cpu->fetch_latch.opcode, "\r\t\n")] = 0;
         }
+        // printf("Reverse: %d", cpu->reverse_branch);
+        // Do not Branch using BTB for this cycle
         if(cpu->reverse_branch == 1){
             cpu->reverse_branch = 0;
             cpu->decode_latch = cpu->fetch_latch;
@@ -1376,11 +1476,11 @@ void fetch_unit(CPU* cpu){
             if(cpu->btb[(cpu->fetch_latch.instAddr/4)%16].tag == get_tag(cpu->fetch_latch.instAddr)){
                 if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
                     cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
-                    cpu->fetch_latch.branch_taken = 1;
+                    cpu->fetch_latch.branch_taken = 1;);
                 }
-            }
-            else{
-                cpu->fetch_latch.branch_taken = 0;
+                else{
+                    cpu->fetch_latch.branch_taken = 0;
+                }
             }
         }
         if(strcmp(cpu->fetch_latch.opcode,"bgez") == 0){
@@ -1388,10 +1488,10 @@ void fetch_unit(CPU* cpu){
                 if(cpu->pt[(cpu->fetch_latch.instAddr/4)%16].pattern > 3){
                     cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
                     cpu->fetch_latch.branch_taken = 1;
+                } 
+                else{
+                    cpu->fetch_latch.branch_taken = 0;
                 }
-            }
-            else{
-                cpu->fetch_latch.branch_taken = 0;
             }
         }
         else if(strcmp(cpu->fetch_latch.opcode,"blez") == 0){
@@ -1400,9 +1500,9 @@ void fetch_unit(CPU* cpu){
                     cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
                     cpu->fetch_latch.branch_taken = 1;
                 }
-            }
-            else{
-                cpu->fetch_latch.branch_taken = 0;
+                else{
+                    cpu->fetch_latch.branch_taken = 0;
+                }
             }
         }
         else if(strcmp(cpu->fetch_latch.opcode,"bgtz") == 0){
@@ -1411,9 +1511,9 @@ void fetch_unit(CPU* cpu){
                     cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
                     cpu->fetch_latch.branch_taken = 1;
                 }
-            }
-            else{
-                cpu->fetch_latch.branch_taken = 0;
+                else{
+                    cpu->fetch_latch.branch_taken = 0;
+                }
             }
         }
         else if(strcmp(cpu->fetch_latch.opcode,"bltz") == 0){
@@ -1422,19 +1522,18 @@ void fetch_unit(CPU* cpu){
                     cpu->pc = (cpu->btb[(cpu->fetch_latch.instAddr/4)%16].target) / 4;
                     cpu->fetch_latch.branch_taken = 1;
                 }
-            }
-            else{
-                cpu->fetch_latch.branch_taken = 0;
+                else{
+                    cpu->fetch_latch.branch_taken = 0;
+                }
             }
         }
 
         // BTB implementation ended
-        
         cpu->decode_latch = cpu->fetch_latch;
     }
-    else if (cpu->fetch_latch.halt_triggered == 1){
+    else if (cpu->fetch_latch.has_inst == 1 && cpu->fetch_latch.halt_triggered == 1){
         if(strcmp(options,"pipeline") == 0){
-            printf("IF             : %s",cpu->instructions[cpu->fetch_latch.pc+1]);
+            printf("(s)IF          : %s",cpu->instructions[cpu->fetch_latch.pc+1]);
         }
     }
 }
