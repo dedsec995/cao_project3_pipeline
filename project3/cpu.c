@@ -521,6 +521,8 @@ void branch_unit(CPU* cpu){
                     return;
                 }
                 else{
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
                     }
@@ -682,6 +684,8 @@ void branch_unit(CPU* cpu){
                     return;
                 }
                 else{
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
                     }
@@ -760,6 +764,8 @@ void branch_unit(CPU* cpu){
                     return;
                 }
                 else{
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
                     }
@@ -838,6 +844,8 @@ void branch_unit(CPU* cpu){
                     return;
                 }
                 else{
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].tag = get_tag(cpu->branch_latch.instAddr);
+                    cpu->btb[(cpu->branch_latch.instAddr/4)%16].target = atoi(cpu->branch_latch.or1+1);
                     if(cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern > 0){
                         cpu->pt[(cpu->branch_latch.instAddr/4)%16].pattern--;
                     }
@@ -1234,6 +1242,40 @@ void  register_read_unit(CPU* cpu){
             return;
         }
         if (strcmp(cpu->register_read_latch.opcode,"st") == 0){
+            if(cpu->register_read_latch.or1[0] == 82){
+                int done = 0;
+                if(strcmp(cpu->register_read_latch.or1,cpu->add_reg) == 0 || strcmp(cpu->register_read_latch.or1,cpu->mul_reg) == 0 || strcmp(cpu->register_read_latch.or1,cpu->div_reg) == 0){
+                    if(strcmp(cpu->register_read_latch.or1,cpu->add_reg) == 0){
+                        cpu->register_read_latch.rg2_val = cpu->add_val;
+                        done = 1;
+                    }
+                    else if(strcmp(cpu->register_read_latch.rg1,cpu->mul_reg) == 0){
+                        cpu->register_read_latch.rg2_val = cpu->mul_val;
+                        done = 1;
+                    }
+                    else if(strcmp(cpu->register_read_latch.rg1,cpu->div_reg) == 0){
+                        cpu->register_read_latch.rg2_val = cpu->div_val;
+                        done = 1;
+                    }
+                    if(done == 1 && cpu->regs[atoi(cpu->register_read_latch.rg1+1)].is_writing < 1){
+                        cpu->analysis_latch.halt_triggered = 0;
+                        cpu->decode_latch.halt_triggered = 0;
+                        cpu->fetch_latch.halt_triggered = 0;
+                        cpu->register_read_latch.unfreeze = 0;
+                        cpu->register_read_latch.halt_triggered = 0;
+                        cpu->adder_latch = cpu->register_read_latch;
+                        return;
+                    }
+                    if(cpu->regs[atoi(cpu->register_read_latch.rg1+1)].is_writing < 1 && cpu->regs[atoi(cpu->register_read_latch.or1+1)].is_writing < 1){
+                        cpu->register_read_latch.unfreeze = 1;
+                        cpu->register_read_latch.halt_triggered = 0;
+                        return;
+                    }
+                }
+                else if(cpu->regs[atoi(cpu->register_read_latch.or1+1)].is_writing > 0){
+                    return;
+                }
+            }
             if(strcmp(cpu->register_read_latch.rg1,cpu->add_reg) == 0 || strcmp(cpu->register_read_latch.rg1,cpu->mul_reg) == 0 || strcmp(cpu->register_read_latch.rg1,cpu->div_reg) == 0){
                 if(strcmp(cpu->register_read_latch.rg1,cpu->add_reg) == 0){
                     cpu->register_read_latch.rg1_val = cpu->add_val;
@@ -1359,8 +1401,24 @@ void  register_read_unit(CPU* cpu){
             else{
                 frw2 = 1;
             }
+            if(cpu->register_read_latch.or1[0] == 82 && cpu->register_read_latch.or2[0] == 82){
+                if(frw1 == 1){
+                    printf("This: %d\n",cpu->regs[atoi(cpu->register_read_latch.or2+1)].freed_this_cycle);
+                    if( cpu->regs[atoi(cpu->register_read_latch.or2+1)].is_writing < 1 && cpu->regs[atoi(cpu->register_read_latch.or2+1)].freed_this_cycle == 0){
+                        frw2 = 1;
+                    }                    
+                }
+                else if (frw2 == 1){
+                    if(cpu->regs[atoi(cpu->register_read_latch.or1+1)].is_writing < 1 && cpu->regs[atoi(cpu->register_read_latch.or1+1)].freed_this_cycle == 0){
+                        frw1 = 1;
+                    }                    
+                }
+            }
+            // if(frw2 == 1 && sstall1 == 1 && cpu->regs[atoi(cpu->register_read_latch.or1+1)].freed_this_cycle == 0){
+            //     frw1 = 1;
+            // }
             // printf("Add: %s\nMul: %s\nDiv: %s\n",cpu->add_reg,cpu->mul_reg,cpu->div_reg);
-            // printf("Stall1: %d\nStall2: %d\nfw1: %d\nfw2: %d\n",sstall1,sstall2,frw1,frw2);
+            // printf("Stall1: %d\nStall2: %d\nfw1: %d\nfw2: %d\nStatus1: %d\nStatus2: %d\n",sstall1,sstall2,frw1,frw2,cpu->regs[atoi(cpu->register_read_latch.or1+1)].is_writing,cpu->regs[atoi(cpu->register_read_latch.or2+1)].is_writing);
             if(frw1 == 1 && frw2 == 1){
                 cpu->analysis_latch.halt_triggered = 0;
                 cpu->decode_latch.halt_triggered = 0;
@@ -1512,6 +1570,9 @@ void fetch_unit(CPU* cpu){
                     cpu->fetch_latch.branch_taken = 0;
                 }
             }
+            else{
+                cpu->fetch_latch.branch_taken = 0;
+            }
         }
         if(strcmp(cpu->fetch_latch.opcode,"bgez") == 0){
             if(cpu->btb[(cpu->fetch_latch.instAddr/4)%16].tag == get_tag(cpu->fetch_latch.instAddr)){
@@ -1522,6 +1583,9 @@ void fetch_unit(CPU* cpu){
                 else{
                     cpu->fetch_latch.branch_taken = 0;
                 }
+            }
+            else{
+                cpu->fetch_latch.branch_taken = 0;
             }
         }
         else if(strcmp(cpu->fetch_latch.opcode,"blez") == 0){
@@ -1534,6 +1598,9 @@ void fetch_unit(CPU* cpu){
                     cpu->fetch_latch.branch_taken = 0;
                 }
             }
+            else{
+                cpu->fetch_latch.branch_taken = 0;
+            }
         }
         else if(strcmp(cpu->fetch_latch.opcode,"bgtz") == 0){
             if(cpu->btb[(cpu->fetch_latch.instAddr/4)%16].tag == get_tag(cpu->fetch_latch.instAddr)){
@@ -1545,6 +1612,9 @@ void fetch_unit(CPU* cpu){
                     cpu->fetch_latch.branch_taken = 0;
                 }
             }
+            else{
+                cpu->fetch_latch.branch_taken = 0;
+            }
         }
         else if(strcmp(cpu->fetch_latch.opcode,"bltz") == 0){
             if(cpu->btb[(cpu->fetch_latch.instAddr/4)%16].tag == get_tag(cpu->fetch_latch.instAddr)){
@@ -1555,6 +1625,9 @@ void fetch_unit(CPU* cpu){
                 else{
                     cpu->fetch_latch.branch_taken = 0;
                 }
+            }
+            else{
+                cpu->fetch_latch.branch_taken = 0;
             }
         }
 
@@ -1575,5 +1648,7 @@ void clear_forwarding(CPU* cpu){
     strcpy(cpu->br_reg,"NULL");
     strcpy(cpu->mem1_reg,"NULL");
     strcpy(cpu->freedit,"NULL");
-    cpu->regs[atoi(cpu->writeback_latch.rg1+1)].freed_this_cycle = 0;
+    for (int i=0; i<16; i++){
+        cpu->regs[i].freed_this_cycle = 0;
+    }
 }

@@ -14034,7 +14034,7 @@ Clock Cycle #: 288
 --------------------------------
 DIV            : 0340 add R4 R3 R8
 MUL            : 0344 mul R0 R8 #4
-RR             : 0348 add R1 R6 R0
+RR             : 0348 add R1 R6     
 IA             : 0352 sub R8 R8 #1
 ID             : 0356 st R4 R1
 IF             : 0360 bgtz R8 #0340
