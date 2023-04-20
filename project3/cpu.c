@@ -316,9 +316,10 @@ void simulate(CPU* cpu){
         print_display(cpu);
         cpu->clock++;
         cpu->fetch_latch.has_inst = 1;  
-        if(cpu->clock > 100000){
-            return;
-        }
+        // Safty Termination
+        // if(cpu->clock > 22000){
+        //     return;
+        // }
         if(strcmp(options,"pipeline") == 0){
             printf("\n================================");
             printf("\nClock Cycle #: %d\n",cpu->clock);
@@ -474,7 +475,7 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    if(cpu->register_read_latch.halt_triggered == 1){
+                    if(cpu->register_read_latch.halt_triggered == 1 || cpu->fetch_latch.halt_triggered == 1){
                         cpu->hazard++;
                         cpu->adder_latch.halt_triggered = 0;
                         cpu->register_read_latch.halt_triggered = 0;
@@ -506,7 +507,7 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    if(cpu->register_read_latch.halt_triggered == 1){
+                    if(cpu->register_read_latch.halt_triggered == 1 || cpu->fetch_latch.halt_triggered == 1){
                         cpu->hazard++;
                         cpu->adder_latch.halt_triggered = 0;
                         cpu->register_read_latch.halt_triggered = 0;
@@ -555,7 +556,7 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    if(cpu->register_read_latch.halt_triggered == 1){
+                    if(cpu->register_read_latch.halt_triggered == 1 || cpu->fetch_latch.halt_triggered == 1){
                         cpu->hazard++;
                         cpu->adder_latch.halt_triggered = 0;
                         cpu->register_read_latch.halt_triggered = 0;
@@ -588,7 +589,7 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    if(cpu->register_read_latch.halt_triggered == 1){
+                    if(cpu->register_read_latch.halt_triggered == 1 || cpu->fetch_latch.halt_triggered == 1){
                         cpu->hazard++;
                         cpu->adder_latch.halt_triggered = 0;
                         cpu->register_read_latch.halt_triggered = 0;
@@ -637,7 +638,7 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    if(cpu->register_read_latch.halt_triggered == 1){
+                    if(cpu->register_read_latch.halt_triggered == 1 || cpu->fetch_latch.halt_triggered == 1){
                         cpu->hazard++;
                         cpu->adder_latch.halt_triggered = 0;
                         cpu->register_read_latch.halt_triggered = 0;
@@ -669,7 +670,7 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    if(cpu->register_read_latch.halt_triggered == 1){
+                    if(cpu->register_read_latch.halt_triggered == 1 || cpu->fetch_latch.halt_triggered == 1){
                         cpu->hazard++;
                         cpu->adder_latch.halt_triggered = 0;
                         cpu->register_read_latch.halt_triggered = 0;
@@ -717,7 +718,7 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    if(cpu->register_read_latch.halt_triggered == 1){
+                    if(cpu->register_read_latch.halt_triggered == 1 || cpu->fetch_latch.halt_triggered == 1){
                         cpu->hazard++;
                         cpu->adder_latch.halt_triggered = 0;
                         cpu->register_read_latch.halt_triggered = 0;
@@ -749,7 +750,7 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    if(cpu->register_read_latch.halt_triggered == 1){
+                    if(cpu->register_read_latch.halt_triggered == 1 || cpu->fetch_latch.halt_triggered == 1){
                         cpu->hazard++;
                         cpu->adder_latch.halt_triggered = 0;
                         cpu->register_read_latch.halt_triggered = 0;
@@ -797,7 +798,7 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    if(cpu->register_read_latch.halt_triggered == 1){
+                    if(cpu->register_read_latch.halt_triggered == 1 || cpu->fetch_latch.halt_triggered == 1){
                         cpu->hazard++;
                         cpu->adder_latch.halt_triggered = 0;
                         cpu->register_read_latch.halt_triggered = 0;
@@ -829,7 +830,7 @@ void branch_unit(CPU* cpu){
                     cpu->divider_latch.has_inst = 0;
                     cpu->memory1_latch = cpu->branch_latch;
                     cpu->branch_latch.has_inst = 0;
-                    if(cpu->register_read_latch.halt_triggered == 1){
+                    if(cpu->register_read_latch.halt_triggered == 1 || cpu->fetch_latch.halt_triggered == 1){
                         cpu->hazard++;
                         cpu->adder_latch.halt_triggered = 0;
                         cpu->register_read_latch.halt_triggered = 0;
@@ -1403,7 +1404,6 @@ void  register_read_unit(CPU* cpu){
             }
             if(cpu->register_read_latch.or1[0] == 82 && cpu->register_read_latch.or2[0] == 82){
                 if(frw1 == 1){
-                    printf("This: %d\n",cpu->regs[atoi(cpu->register_read_latch.or2+1)].freed_this_cycle);
                     if( cpu->regs[atoi(cpu->register_read_latch.or2+1)].is_writing < 1 && cpu->regs[atoi(cpu->register_read_latch.or2+1)].freed_this_cycle == 0){
                         frw2 = 1;
                     }                    
